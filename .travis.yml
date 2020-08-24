@@ -1,0 +1,37 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+env:
+  - DJANGO_VERSION=1.11
+  - DJANGO_VERSION=2.0
+addons:
+    sonarcloud:
+      organization: $SC_ORG
+      token: $SC_TOKEN
+
+matrix:
+    exclude:
+    - python: "3.3"
+      env: DJANGO_VERSION=1.11
+    - python: "2.7"
+      env: DJANGO_VERSION=2.0
+before_install:
+  - pip install -U pip
+  - pip install -q Django==$DJANGO_VERSION
+  - pip install -U wheel setuptools flake8
+install:
+  - python setup.py -q install
+script:
+  - flake8 ./src
+  - python setup.py test --addopts "--cov=django_keycloak --cov-report xml:coverage.xml"
+  - sonar-scanner
+
+cache:
+    directories:
+    - '$HOME/.sonar/cache'
+
+after_success:
+  - pip install codecov
+  - codecov
