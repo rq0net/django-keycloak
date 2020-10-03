@@ -13,7 +13,10 @@ from django_keycloak.response import HttpResponseNotAuthorized
 
 def get_realm(request):
     if not hasattr(request, '_cached_realm'):
-        request._cached_realm = Realm.objects.first()
+        if 'realm' in request.headers:
+            request._cached_realm = Realm.objects.get(name=request.headers['realm'])
+        else:
+            request._cached_realm = Realm.objects.first()
     return request._cached_realm
 
 
