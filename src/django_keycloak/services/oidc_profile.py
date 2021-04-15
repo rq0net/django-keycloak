@@ -68,7 +68,8 @@ def get_or_create_from_id_token(client, id_token):
         key=client.realm.certs,
         algorithms=client.openid_api_client.well_known[
             'id_token_signing_alg_values_supported'],
-        issuer=issuer
+        issuer=issuer,
+        options={"verify_iss": False}
     )
 
     return update_or_create_user_and_oidc_profile(
