@@ -5,10 +5,10 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import AnonymousUser
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.functional import SimpleLazyObject
+from django.http import HttpResponseNotAuthorized
 
 from django_keycloak.models import Realm
 from django_keycloak.auth import get_remote_user
-from django_keycloak.response import HttpResponseNotAuthorized
 
 
 def get_realm(request):
@@ -94,15 +94,20 @@ class KeycloakStatelessBearerAuthenticationMiddleware(BaseKeycloakMiddleware):
                 return
 
         if self.header_key in request.META:
+            try:
+                _, token = request.META[self.header_key].split(' ')
+            except ValueError:
+                return HttpResponseNotAuthorized(
+                    attributes={'realm': "Token is empty"})
+
             user = authenticate(
                 request=request,
-                access_token=request.META[self.header_key].split(' ')[1]
+                access_token=token
             )
 
             if user is None:
-                return
-                # return HttpResponseNotAuthorized(
-                #     attributes={'realm': request.realm.name})
+                return HttpResponseNotAuthorized(
+                    attributes={'realm': "User is not authenticated"})
             else:
                 request.user = user
 
