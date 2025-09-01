@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import AnonymousUser
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.functional import SimpleLazyObject
-from django.http import HttpResponseNotAuthorized
+from django.http import HttpResponse
 
 from django_keycloak.models import Realm
 from django_keycloak.auth import get_remote_user
@@ -81,7 +81,7 @@ class KeycloakStatelessBearerAuthenticationMiddleware(BaseKeycloakMiddleware):
     def process_request(self, request):
         """
         Forces authentication on all requests except the URL's configured in
-        the exempt setting.
+        the exempt setting.cluster_utgcalpha
         """
         super(KeycloakStatelessBearerAuthenticationMiddleware, self)\
             .process_request(request=request)
@@ -97,8 +97,10 @@ class KeycloakStatelessBearerAuthenticationMiddleware(BaseKeycloakMiddleware):
             try:
                 _, token = request.META[self.header_key].split(' ')
             except ValueError:
-                return HttpResponseNotAuthorized(
-                    attributes={'realm': "Token is empty"})
+                return HttpResponse(
+                    status=401,
+                    content="Token is empty"
+                )
 
             user = authenticate(
                 request=request,
@@ -106,8 +108,10 @@ class KeycloakStatelessBearerAuthenticationMiddleware(BaseKeycloakMiddleware):
             )
 
             if user is None:
-                return HttpResponseNotAuthorized(
-                    attributes={'realm': "User is not authenticated"})
+                return HttpResponse(
+                    status=401,
+                    content="User is not authenticated"
+                )
             else:
                 request.user = user
 
