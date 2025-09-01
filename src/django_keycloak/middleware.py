@@ -108,10 +108,7 @@ class KeycloakStatelessBearerAuthenticationMiddleware(BaseKeycloakMiddleware):
             )
 
             if user is None:
-                return HttpResponse(
-                    status=401,
-                    content="User is not authenticated"
-                )
+                return
             else:
                 request.user = user
 
